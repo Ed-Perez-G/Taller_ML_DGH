@@ -1,0 +1,284 @@
+---
+title: "EDA"
+---
+
+# Análisis Exploratorio de Datos
+
+El **Análisis Exploratorio de Datos (EDA)** es la etapa inicial en el análisis de datos, la cual consiste en explorar y resumir un conjunto nuestros datos para comprender su estructura, detectar patrones y anomalías, y formular hipótesis para estudios más profundos o modelos predictivos.
+
+El EDA se utiliza principalmente para:
+
+1.	Comprender la estructura del conjunto de datos: Verificar el tamaño, las variables y el tipo de datos que se van a analizar.
+2.	Identificar la calidad de los datos: Detectar datos faltantes, valores atípicos (*outliers*) y duplicados, que pueden afectar los análisis posteriores.
+3.	Explorar la distribución de las variables: Verificar si los datos siguen una distribución específica, como la normal, y conocer la variabilidad y los rangos de las variables.
+4.	Encontrar relaciones entre variables: Identificar correlaciones o patrones entre variables numéricas y categóricas, lo que puede ayudar en la creación de modelos y análisis de causalidad.
+5.	Formular hipótesis iniciales: Observar patrones y comportamientos para desarrollar hipótesis que se puedan validar en etapas posteriores del análisis.
+
+
+Este documento, está diseñado para copie y pegue el código en la consola de `R` y lo ejecute. Puede descargar la versión de este documento y después abrirlo en Rstudio [aquí](https://github.com/Ed-Perez-G/Taller_ML_DGH/blob/main/Quarto_Documents/EDA.qmd):  o [aquí](https://drive.google.com/file/d/1h90GM7t7lAr4REyqV0Um51QLsZWjDWQx/view?usp=sharing) 
+
+## Importar base datos a `R`
+
+Para importar la base de datos a `R`  utilice la función `read.csv` de la siguiente manera:
+
+
+```{r}
+datos <- read.csv("https://raw.githubusercontent.com/Ed-Perez-G/Taller_ML_DGH/refs/heads/main/bd_CM.csv", 
+                  header = TRUE, sep = ";", stringsAsFactors = T)
+```
+
+Asegúrese de que la base fue leída correctamente utilizando la función `head` y `View` de la siguiente manera:
+
+
+```{r}
+head(datos)
+```
+El siguiente código le permitirá visualizar su base completa en una nueva ventana de Rstudio:
+
+```{r eval=TRUE}
+View(datos)
+```
+
+
+## Visaluzación general de la base de datos
+
+Para visualizar la estructura de la base de datos utilice la función `str` de la siguiente manera:
+
+```{r}
+str(datos)
+```
+
+
+Una manera más eficiente es utilizar la función `vistdat` que permite visualmente identificar los tipos de variables y datos faltantes:
+
+```{r}
+visdat::vis_dat(datos)
+# Recuerde que debió instalar la librería visdat
+```
+
+
+## EDA utilizando DataExplorer
+
+La librería `DataExplorer` es una herramienta que permite realizar un análisis exploratorio de datos de manera rápida y eficiente.
+
+```{r message=FALSE, warning=FALSE}
+DataExplorer::introduce(datos)          # Introducción al conjunto de datos
+
+```
+
+```{r}
+DataExplorer::plot_intro(datos)          # Resumen rápido
+```
+
+
+```{r}
+DataExplorer::plot_histogram(datos)     # Histogramas de variables numéricas
+```
+
+
+```{r}
+DataExplorer::plot_bar(datos)           # Frecuencia de variables categóricas
+```
+
+```{r}
+library(tidyverse)
+datos %>% 
+  select(where(is.numeric)) %>% 
+  # Selecciona solo las columnas numéricas
+  DataExplorer::plot_correlation()   # Correlación entre variables numéricas
+
+```
+
+
+Finalmente, puede crear un reporte completa utilizando la función `create_report`:
+
+
+```{r eval=TRUE}
+DataExplorer::create_report(datos)
+```
+
+
+
+
+
+## Estadística descriptiva
+
+También puede utilizar la función `summary` para obtener un resumen de las variables de la base de datos:
+
+```{r}
+summary(datos)
+```
+
+Además, en `R` puede utilizar la función `summarytools` para obtener un resumen más detallado de las variables numéricas y categóricas:
+
+```{r eval=TRUE}
+datos %>% 
+  select(overall_survival_time_months, age_at_diagnosis_years, tumor_size_mm) %>% 
+  descr()  %>% 
+  stview()
+```
+
+El código anterior generará un resumen de las variables de la base de datos. Este resumen se visualizará en la ventana de Wiewer de Rstudio.´
+
+
+
+```{r eval=TRUE}
+datos %>% 
+  freq() %>% 
+  stview()
+```
+
+
+## Comparación entre los pacientes con respuesta y sin respuesta
+
+### Variables numéricas
+
+```{r}
+datos %>% 
+  ggplot(aes(x = as.factor(CT_responde), y = tumor_size_mm, fill=as.factor(CT_responde))) +
+  geom_boxplot(alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "Comparación de tumor_size_mm por respuesta",
+       x = "CT_responde",
+       y = "Tamaño en mm")+
+  theme(legend.position = "none")
+```
+
+
+
+```{r}
+datos %>% 
+  ggplot(aes(x = as.factor(CT_responde), y = age_at_diagnosis_years, fill=as.factor(CT_responde))) +
+  geom_boxplot(alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "Comparación de la edad de diagnóstico por respuesta",
+       x = "CT_responde",
+       y = "Edad (años)")+
+  theme(legend.position = "none")
+```
+
+
+
+```{r}
+datos %>% 
+  ggplot(aes(x = as.factor(CT_responde), y = overall_survival_time_months, fill=as.factor(CT_responde))) +
+  geom_boxplot(alpha = 0.5) +
+  theme_minimal() +
+  labs(title = "Comparación de la edad de diagnóstico por respuesta",
+       x = "CT_responde",
+       y = "Meses")+
+  theme(legend.position = "none")
+```
+
+
+
+### Variables categóricas
+
+
+```{r}
+# Gráfico de barras para la relación entre `country` y `CT_responde`
+datos %>%
+ggplot( aes(x = country, fill = factor(CT_responde))) +
+  geom_bar(position = "dodge", col="black", alpha=0.5) +
+  labs(title = "country vs CT_responde", x = "country", y = "Count", fill = "CT_responde") +
+  theme_minimal()
+```
+
+```{r}
+# Gráfico de barras para la relación entre `cellularity` y `CT_responde`
+datos %>%
+ggplot( aes(x = cellularity, fill = factor(CT_responde))) +
+  geom_bar(position = "dodge", col="black", alpha=0.5) +
+  labs(title = "Cellularity vs CT_responde", x = "Cellularity", y = "Count", fill = "CT_responde") +
+  theme_minimal()
+```
+
+
+
+
+```{r}
+# Gráfico de barras para la relación entre `estrogen_receptors_ihc` y `CT_responde`
+datos %>%
+ggplot( aes(x = estrogen_receptors_ihc, fill = factor(CT_responde))) +
+  geom_bar(position = "dodge", col="black", alpha=0.5) +
+  labs(title = "estrogen_receptors_ihc vs CT_responde", x = "estrogen_receptors_ihc", y = "Count", fill = "CT_responde") +
+  theme_minimal()
+```
+
+```{r}
+# Gráfico de barras para la relación entre `menopausal_state` y `CT_responde`
+datos %>%
+ggplot( aes(x = menopausal_state, fill = factor(CT_responde))) +
+  geom_bar(position = "dodge", col="black", alpha=0.5) +
+  labs(title = "menopausal_state vs CT_responde", x = "menopausal_state", y = "Count", fill = "CT_responde") +
+  theme_minimal()
+```
+
+
+
+```{r}
+# Gráfico de barras para la relación entre `claudin_subtype` y `CT_responde`
+datos %>%
+ggplot( aes(x = claudin_subtype, fill = factor(CT_responde))) +
+  geom_bar(position = "dodge", col="black", alpha=0.5) +
+  labs(title = "claudin_subtype vs CT_responde", x = "claudin_subtype", y = "Count", fill = "CT_responde") +
+  theme_minimal()
+```
+
+
+
+```{r}
+# Gráfico de barras para la relación entre `vital_status` y `CT_responde`
+datos %>%
+ggplot( aes(x = vital_status, fill = factor(CT_responde))) +
+  geom_bar(position = "dodge", col="black", alpha=0.5) +
+  labs(title = "vital_status vs CT_responde", x = "vital_status", y = "Count", fill = "CT_responde") +
+  theme_minimal()
+```
+
+
+```{r}
+# Gráfico de barras para la relación entre `cancer_type_detailed` y `CT_responde`
+datos %>%
+ggplot( aes(x = cancer_type_detailed, fill = factor(CT_responde))) +
+  geom_bar(position = "dodge", col="black", alpha=0.5) +
+  labs(title = "cancer_type_detailed vs CT_responde", x = "cancer_type_detailed", y = "Count", fill = "CT_responde") +
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+# Gráfico de barras para la relación entre `her2_status` y `CT_responde`
+datos %>%
+ggplot( aes(x = her2_status, fill = factor(CT_responde))) +
+  geom_bar(position = "dodge", col="black", alpha=0.5) +
+  labs(title = "her2_status vs CT_responde", x = "her2_status", y = "Count", fill = "CT_responde") +
+  theme_minimal()
+```
+
+```{r}
+# Gráfico de barras para la relación entre `progesterone_receptors_status` y `CT_responde`
+datos %>%
+ggplot( aes(x = progesterone_receptors_status, fill = factor(CT_responde))) +
+  geom_bar(position = "dodge", col="black", alpha=0.5) +
+  labs(title = "progesterone_receptors_status vs CT_responde", x = "progesterone_receptors_status", y = "Count", fill = "CT_responde") +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,143 @@
+---
+title: "EDA"
+---
+
+# Análisis Exploratorio de Datos
+
+El **Análisis Exploratorio de Datos (EDA)** es la etapa inicial en el análisis de datos, la cual consiste en explorar y resumir un conjunto nuestros datos para comprender su estructura, detectar patrones y anomalías, y formular hipótesis para estudios más profundos o modelos predictivos.
+
+El EDA se utiliza principalmente para:
+
+1.	Comprender la estructura del conjunto de datos: Verificar el tamaño, las variables y el tipo de datos que se van a analizar.
+2.	Identificar la calidad de los datos: Detectar datos faltantes, valores atípicos (outliers) y duplicados, que pueden afectar los análisis posteriores.
+3.	Explorar la distribución de las variables: Verificar si los datos siguen una distribución específica, como la normal, y conocer la variabilidad y los rangos de las variables.
+4.	Encontrar relaciones entre variables: Identificar correlaciones o patrones entre variables numéricas y categóricas, lo que puede ayudar en la creación de modelos y análisis de causalidad.
+5.	Formular hipótesis iniciales: Observar patrones y comportamientos para desarrollar hipótesis que se puedan validar en etapas posteriores del análisis.
+
+
+Este documento, está diseñado para copie y pegue el código en la consola de `R` y lo ejecute.
+
+## Importar base datos a `R`
+
+Para importar la base de datos a `R`  utilice la función `read.csv` de la siguiente manera:
+
+
+```{r}
+datos <- read.csv("https://raw.githubusercontent.com/Ed-Perez-G/Taller_ML_DGH/refs/heads/main/bd_CM.csv", 
+                  header = TRUE, sep = ";", stringsAsFactors = T)
+```
+
+Asegurese de que la base fue copiada correctamente utilizando la función `head` y `View` de la siguiente manera:
+
+
+```{r}
+head(datos)
+```
+
+```{r eval=TRUE}
+View(datos)
+```
+
+
+## Visaluzación general de la base de datos
+
+Para visualizar la estructura de la base de datos utilice la función `str` de la siguiente manera:
+
+```{r}
+str(datos)
+```
+
+
+Una manera más eficiente es utilizar la función `vistdat` que permite visualmente identificar los tipos de variables y datos faltantes:
+
+```{r}
+visdat::vis_dat(datos)
+# Recuerde que debió instalar la librería visdat
+```
+
+
+## EDA utilizando DataExplorer
+
+La librería `DataExplorer` es una herramienta que permite realizar un análisis exploratorio de datos de manera rápida y eficiente.
+
+```{r message=FALSE, warning=FALSE}
+DataExplorer::introduce(datos)          # Introducción al conjunto de datos
+
+```
+
+```{r}
+DataExplorer::plot_intro(datos)          # Resumen rápido
+```
+
+
+```{r}
+DataExplorer::plot_histogram(datos)     # Histogramas de variables numéricas
+```
+
+
+```{r}
+DataExplorer::plot_bar(datos)           # Frecuencia de variables categóricas
+```
+
+```{r}
+DataExplorer::plot_correlation(datos)   # Heatmap
+```
+
+
+Finalmente, puede crear un reporte completa utilizando la función `create_report`:
+
+
+```{r eval=TRUE}
+DataExplorer::create_report(datos)
+```
+
+
+## Otros resumenes
+
+
+```{r}
+library(tidyverse)
+library(summarytools)
+datos %>% 
+  glimpse()
+```
+
+
+```{r eval=TRUE}
+datos %>% 
+  dfSummary(graph.col=TRUE, 
+            style = "grid",
+            grpah.magnif = 0.75) %>% 
+  stview()
+```
+
+El código anterior generará un resumen de las variables de la base de datos. Este resumen se visualizará en la ventana de Wiewer de Rstudio.´
+
+
+## Estadística descriptiva
+
+También puede utilizar la función `summary` para obtener un resumen de las variables de la base de datos:
+
+```{r}
+summary(datos)
+```
+
+Además, en `R` puede utilizar la función `summarytools` para obtener un resumen más detallado de las variables numéricas y categóricas:
+
+```{r eval=TRUE}
+datos %>% 
+  select(overall_survival_time_months, age_at_diagnosis_years, tumor_size_mm) %>% 
+  descr()  %>% 
+  stview()
+```
+
+El código anterior generará un resumen de las variables de la base de datos. Este resumen se visualizará en la ventana de Wiewer de Rstudio.´
+
+
+
+```{r eval=TRUE}
+datos %>% 
+  freq() %>% 
+  stview()
+```
+

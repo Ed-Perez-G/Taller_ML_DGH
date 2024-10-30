@@ -24,7 +24,7 @@ Para importar la base de datos a `R`  utilice la función `read.csv` de la sigui
 
 ```{r}
 datos <- read.csv("https://raw.githubusercontent.com/Ed-Perez-G/Taller_ML_DGH/refs/heads/main/bd_CM.csv", 
-                  header = TRUE, sep = ";", stringsAsFactors = T)
+                  header = TRUE, sep = ";", stringsAsFactors = T, na="")
 ```
 
 Asegúrese de que la base fue leída correctamente utilizando la función `head` y `View` de la siguiente manera:
